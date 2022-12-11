@@ -19,23 +19,43 @@ class BaseModel(db.Model):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
+
 class ListUser(BaseModel):
-    # user_id = relationship("User", backref='user', lazy=True)
     name = Column(String(50), nullable=False)
+    user = relationship("User", backref="ListUser", lazy=True)
+
+
 class User(BaseModel, UserMixin):
     name = Column(String(50), nullable=False)
     username = Column(String(50), nullable=False)
     password = Column(String(50), nullable=False)
-    avatar = Column(String(100), nullable=False)
+    avatar = Column(String(200), nullable=False)
     active = Column(Boolean, default=True)
     user_role = Column(Enum(UserRole), default=UserRole.USER)
     # receipts = relationship('Receipt', backref='user', lazy=True)
-    medical_report = relationship("MedicalReport", backref='user', lazy=True)
     list_user_id = Column(Integer, ForeignKey(ListUser.id), nullable=False)
+    medical_report = relationship("MedicalReport", backref='user', lazy=True)
+    receipt = relationship('Receipt', backref='user', lazy=True)
 
     def __str__(self):
         return self.name
 
+
+class Receipt(BaseModel):
+    created_date = Column(DateTime, default=datetime.now())
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    price = Column(Float, default=0)
+
+class DiseaseList(BaseModel):
+    name = Column(String(50), nullable=False)
+    # disease_id = Column(Integer, ForeignKey(Disease.id), nullable=False)
+    disease = relationship("Disease", backref = "DiseaseList", lazy = True)
+
+class Disease(BaseModel):
+    name = Column(String(50), nullable=False)
+    # disease_list = relationship("DiseaseList", backref="Disease", lazy=True)
+    medical_report = relationship("MedicalReport", backref='Disease', lazy=True)
+    disease_list_id = Column(Integer, ForeignKey(DiseaseList.id), nullable=False)
 
 
 class Category(BaseModel):
@@ -48,38 +68,26 @@ class Category(BaseModel):
         return self.name
 
 
-# prod_tag = db.Table('prod_tag',
-#                     Column('product_id', Integer, ForeignKey('product.id'), primary_key=True),
-#                     Column('tag_id', Integer, ForeignKey('tag.id'), primary_key=True))
-
-class Disease(BaseModel):
-    name = Column(String(50), nullable=False)
-
-class DiseaseList(BaseModel):
-    name = Column(String(50), nullable=False)
-    disease_id = Column(Integer, ForeignKey(Disease.id), nullable=False)
-class MedicalReport(BaseModel):
-    created_date = Column(DateTime, default=datetime.now())
-    # details = relationship('Receipt', backref='receipt', lazy=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    disease_id = Column(Integer, ForeignKey(Disease.id), nullable=False)
-
 class Product(BaseModel):
     name = Column(String(50), nullable=False)
+    unit = Column(String(50))
     description = Column(Text)
     price = Column(Float, default=0)
     # image = Column(String(100))
     active = Column(Boolean, default=True)
     category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
-    medical_report = relationship('MedicalReportDetail', backref='product', lazy=True)
-    # medical_report_id = Column(Integer, ForeignKey(MedicalReport.id), nullable=False)
-
-    # tags = relationship('Tag', secondary='prod_tag', lazy='subquery',
-    #                     backref=backref('products', lazy=True))
+    medical_report_detail = relationship('MedicalReportDetail', backref='product', lazy=True)
 
     def __str__(self):
         return self.name
 
+
+class MedicalReport(BaseModel):
+    created_date = Column(DateTime, default=datetime.now())
+    # details = relationship('Receipt', backref='receipt', lazy=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    disease_id = Column(Integer, ForeignKey(Disease.id), nullable=False)
+    medical_report_detail = relationship("MedicalReportDetail", backref='Disease', lazy=True)
 
 
 class MedicalReportDetail(BaseModel):
@@ -95,62 +103,62 @@ class MedicalReportDetail(BaseModel):
 #         return self.name
 
 
-
-
-
 # class Receipt(BaseModel):
 #     created_date = Column(DateTime, default=datetime.now())
 #     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
 #     details = relationship('ReceiptDetails', backref='receipt', lazy=True)
 
 
-
-
 # class ReceiptDetails(BaseModel):
 #     quantity = Column(Integer, default=0)
 #     price = Column(Float, default=0)
 #     product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
-#     receipt_id = Column(Integer, ForeignKey(Receipt.id), nullable=False)
-
-class Receipt(BaseModel):
-    created_date = Column(DateTime, default=datetime.now())
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    price = Column(Float, default=0)
-
-
+#     receipt_id = Column(Integer, ForeignKey(Receipt.id), nullable=F
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        # db.create_all()
 
-        # c1 = Category(name='Điện thoại')
-        # c2 = Category(name='Máy tính bảng')
-        # c3 = Category(name='Phụ kiện')
-        #
-        # db.session.add_all([c1, c2, c3])
-        # db.session.commit()
-        # p1 = Product(name='iPhone 13 Pro Max', description='Apple, 128GB', price=24000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
-        #              category_id=1)
-        # p2 = Product(name='iPhone 14 Pro', description='Apple, 128GB', price=34000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
-        #              category_id=1)
-        # p3 = Product(name='Galaxy Tab S8', description='Samsung, 128GB', price=28000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg',
-        #              category_id=2)
-        # p4 = Product(name='S22 Pro', description='Samsung, 128GB', price=28000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
-        #              category_id=1)
-        # p5 = Product(name='Galaxy Tab S8', description='Samsung, 128GB', price=32000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg',
-        #              category_id=2)
-        #
-        # db.session.add_all([p1, p2, p3, p4, p5])
-        # db.session.commit()
-        #
-        # import hashlib
-        # password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
-        # u = User(name='thanh', username='admin', password=password,
-        #          user_role=UserRole.ADMIN,
-        #          avatar='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg')
-        # db.session.add(u)
-        # db.session.commit()
+        import hashlib
+
+        password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
+
+        l1 = ListUser(name="Danh sách Admin")
+        l2 = ListUser(name="Danh sách nhân viên")
+        l3 = ListUser(name = "Danh sách bệnh nhân")
+
+        u1 = User(name="Tuấn", username="admin", password=password,
+                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active = True,
+                  user_role=UserRole.ADMIN, list_user_id=1)
+        u2 = User(name="Thái", username="admin", password=password,
+                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
+                  user_role=UserRole.NURSE, list_user_id=2)
+        u3 = User(name="Trang", username="admin", password=password,
+                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
+                  user_role=UserRole.DOCTOR, list_user_id=2)
+        u4 = User(name="Hùng", username="admin", password=password,
+                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
+                  user_role=UserRole.CASHIER, list_user_id=2)
+        u5 = User(name="Thành", username="admin", password=password,
+                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
+                  user_role=UserRole.USER, list_user_id=3)
+
+        ld1 = DiseaseList(name = "Tim")
+        ld2 = DiseaseList(name="Mạch")
+
+        d1 = Disease(name = "Thiếu máu cơ tim", disease_list_id = 1)
+        d2 = Disease(name = "Bệnh viêm cơ tim", disease_list_id = 1)
+        d3 = Disease(name = "Bệnh mạch vành", disease_list_id = 2)
+        d4 = Disease(name = "Bệnh động mạch ngoại biên", disease_list_id = 2)
+
+        c1 = Category(name="Thuốc thể rắn")
+        c2 = Category(name="Thuốc thể mềm")
+        c3 = Category(name="Thuốc thể lỏng")
+
+        p1 = Product(name = "Thuốc A", unit = "viên", description = "Uống", price = 100000, active = 1, category_id = 1)
+        p2 = Product(name="Thuốc B", unit="viên", description="Ngậm", price=30000, active=1, category_id=1)
+        p3 = Product(name="Thuốc C", unit="gói", description="Uống", price=150000, active=1, category_id=3)
+        p4 = Product(name="Thuốc D", unit="bịch", description="Nhai", price=200000, active=1, category_id=2)
+        p5 = Product(name="Thuốc E", unit="bịch", description="Uống", price=500000, active=1, category_id=2)
+
+        db.session.add_all([c1, c2, c3, l1, l2, l3, u1, u2, u3, u4, u5, ld1, ld2, d1, d2, d3, d4, p1, p2, p3, p4, p5])
+        db.session.commit()
