@@ -4,31 +4,27 @@
 
 {% if current_user.is_authenticated %}
 
-<head>
-    <link href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" rel="stylesheet"/>
+<h1 class="text-center text-success">TRANG CHỦ QUẢN TRỊ BÁN HÀNG</h1>
+<h3>Chào <span class="text-danger">{{ current_user.tenUser }}</span>!</h3>
 
-</head>
-
-<h1 style="margin: 2% 1%; font-weight: bold; color: black" class="text-center">TRANG CHỦ QUẢN TRỊ PHÒNG MẠCH TƯ</h1>
-
-
-<div class="admin row">
-    <div class="admin-left col-md-4 col-sm-12text-center">
-        <div class = "admin-left-img">
-            <img src="{{ current_user.avatar }}">
-        </div>
-
-        <div class="admin-left-infor">
-            <h4>{{ current_user.name }}</h4>
-            <h4>{{ current_user.user_role }}</h4>
-            <h4>{{ current_user.birthday }}</h4>
-            <h4>ONLINE <i class="fas fa-toggle-on"></i> </h4>
-
-        </div>
+<div class="row">
+    <div class="col-md-5 col-sm-12">
+        <table class="table">
+            <tr>
+                <th>Id</th>
+                <th>Tên danh mục</th>
+                <th>Số lượng SP</th>
+            </tr>
+            {% for s in stats %}
+            <tr>
+                <td>{{ s[0] }}</td>
+                <td>{{ s[1] }}</td>
+                <td>{{ s[2] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
-
-    <div class="admin-right col-md-8 col-sm-12">
+    <div class="col-md-7 col-sm-12">
         <canvas id="cateStats"></canvas>
     </div>
 </div>

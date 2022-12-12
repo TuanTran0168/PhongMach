@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">PHÒNG MẠCH TƯ</a>
+        <a class="navbar-brand" href="#">BÁN HÀNG TRỰC TUYẾN</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -19,11 +19,8 @@
                 <li class="nav-item">
                     <a class="nav-link text-success" href="/login">
                         <img src="{{ current_user.avatar }}" width="40" class="rounded-circle" alt="{{ current_user.name }}" />
-                        Chào {{ current_user.name }}!
+                        Chào {{ current_user.tenUser }}!
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-success" href="/doctor">Lập phiếu khám</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-danger" href="/logout">Đăng xuất</a>

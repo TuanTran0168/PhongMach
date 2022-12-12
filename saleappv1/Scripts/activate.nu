@@ -1,6 +1,6 @@
 # Setting all environment variables for the venv
 let path-name = (if ((sys).host.name == "Windows") { "Path" } { "PATH" })
-let virtual-env = "E:\Pycharm\LanCuoiCung\IT2002-FlaskSaleWeb\saleappv1"
+let virtual-env = "E:\Pycharm\PhongMachTu\IT2002-FlaskSaleWeb\saleappv1"
 let bin = "Scripts"
 let path-sep = ";"
 
@@ -38,4 +38,4 @@ let-env PROMPT_COMMAND = $new_prompt
 # We are using alias as the function definitions because only aliases can be
 # removed from the scope
 alias pydoc = python -m pydoc
-alias deactivate = source "E:\Pycharm\LanCuoiCung\IT2002-FlaskSaleWeb\saleappv1\Scripts\deactivate.nu"
+alias deactivate = source "E:\Pycharm\PhongMachTu\IT2002-FlaskSaleWeb\saleappv1\Scripts\deactivate.nu"

@@ -4,10 +4,11 @@ from flask_login import login_user, logout_user
 from saleapp.decorator import annonynous_user
 import cloudinary.uploader
 
+
 def index():
-    products = dao.load_products(category_id=request.args.get('category_id'),
+    products = dao.load_products(danhMucThuoc_id=request.args.get('danhMucThuoc_id'),
                                  kw=request.args.get('keyword'))
-    return render_template('index.html', products=products)
+    return render_template('index.html', Thuoc=products)
 
 
 def details(product_id):

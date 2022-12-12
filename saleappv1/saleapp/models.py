@@ -1,9 +1,18 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Enum, DateTime, Date
+from turtle import back
+from typing import re
+
+from colorama import Fore
+from flask_admin.tests.fileadmin.test_fileadmin import Base
+from flask_babelex import Babel
+from sqlalchemy import Column, Integer, String, Float, Boolean, Text, ForeignKey, Enum, DateTime, null
+# from sqlalchemy.ext.mypy.names import COLUMN
 from sqlalchemy.orm import relationship, backref
 from saleapp import db, app
 from enum import Enum as UserEnum
 from flask_login import UserMixin
 from datetime import datetime
+
+from sqlalchemy.util import nullcontext
 
 
 class UserRole(UserEnum):
@@ -20,83 +29,110 @@ class BaseModel(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
 
-class ListUser(BaseModel):
-    name = Column(String(50), nullable=False)
-    user = relationship("User", backref="ListUser", lazy=True)
+class DanhMucThuoc(BaseModel):
+    tenDanhMuc = Column(String(50), nullable=False)
+    thuoc = relationship('Thuoc', backref='DanhMucThuoc', lazy=True)
+
+    def __str__(self):
+        return self.tenDanhMuc
+
+
+class Thuoc(BaseModel):
+    tenThuoc = Column(String(50), nullable=False)
+    giaThuoc = Column(Float, default=0)
+    donViThuoc = Column(String(50))
+    trangThai = Column(Boolean, default=True)
+    moTa = Column(Text)
+    danhMucThuoc_id = Column(Integer, ForeignKey(DanhMucThuoc.id), nullable=False)
+    chiTietPhieuKham = relationship('ChiTietPhieuKham', backref='Thuoc', lazy=True)
+
+    def __str__(self):
+        return self.tenThuoc
 
 
 class User(BaseModel, UserMixin):
-    name = Column(String(50), nullable=True)
-    birthday = Column(Date, nullable=True)
-    gender = Column(Boolean, default=True, nullable=True)
-    username = Column(String(50), nullable=False)
-    password = Column(String(50), nullable=False)
-    avatar = Column(String(200), nullable=False)
-    active = Column(Boolean, default=True)
+    tenUser = Column(String(50), nullable=False)
+    tenDangNhap = Column(String(50), nullable=False, unique=True)
+    matKhau = Column(String(50), nullable=False)
+    ngaySinh = Column(DateTime, default=datetime.now())
+    gioiTinh = Column(Boolean, nullable=True)
+    diaChi = Column(String(100), nullable=True)
+    anhDaiDien = Column(String(100), nullable=False)
+    trangThai = Column(Boolean, default=True)
     user_role = Column(Enum(UserRole), default=UserRole.USER)
-    list_user_id = Column(Integer, ForeignKey(ListUser.id), nullable=True)
-    medical_report = relationship("MedicalReport", backref='user', lazy=True)
-    receipt = relationship('Receipt', backref='user', lazy=True)
+    phieuKham = relationship("PhieuKham", backref="User", lazy=True)
+    hoaDon = relationship("HoaDon", backref="User", lazy=True)
+    chiTietDanhSachKham = relationship("ChiTietDanhSachKham", backref="User", lazy=True)
+    # Moi quan he 1 - 1 tren mang no chi xai uselist = false;
+    lichSuBenh = relationship("LichSuBenh", backref="User", lazy=True, uselist=False)
+
+    def __str__(self):
+        return self.tenUser
+
+
+class HoaDon(BaseModel):
+    tenHoaDon = Column(String(50), nullable=False)
+    ngayKham = Column(DateTime, default=datetime.now())
+    tongTien = Column(Float, nullable=True)
+    user_id = Column("User", ForeignKey(User.id), nullable=False)
+
+    def __str__(self):
+        return self.tenHoaDon
+
+
+class PhieuKham(BaseModel):
+    tenPhieuKham = Column(String(50), nullable=False)
+    ngayKham = Column(DateTime, default=datetime.now())
+    trieuChung = Column(String(100), nullable=True)
+    chuanDoan = Column(String(100), nullable=True)
+    user_id = Column("User", ForeignKey(User.id), nullable=False)
+
+    def __str__(self):
+        return self.tenPhieuKham
+
+
+class ChiTietPhieuKham(BaseModel):
+    soLuongThuoc = Column(Integer, nullable=True)
+    Thuoc_id = Column("Thuoc", ForeignKey(Thuoc.id), nullable=False)
+    phieuKham_id = Column("PhieuKham", ForeignKey(PhieuKham.id), nullable=False)
+
+
+class DanhSachKham(BaseModel):
+    tenDanhSachKham = Column(String(50), nullable=True)
+    ngayKham = Column(DateTime, default=datetime.now())
+
+    def __str__(self):
+        return self.tenDanhSachKham
+
+
+class ChiTietDanhSachKham(BaseModel):
+    danhSachKham_id = Column("DanhSachKham", ForeignKey(DanhSachKham.id), nullable=False)
+    user_id = Column("User", ForeignKey(User.id), nullable=False)
 
     def __str__(self):
         return self.name
 
 
-class Receipt(BaseModel):
-    created_date = Column(DateTime, default=datetime.now())
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    price = Column(Float, default=0)
-
-
-class DiseaseList(BaseModel):
-    name = Column(String(50), nullable=False)
-    # disease_id = Column(Integer, ForeignKey(Disease.id), nullable=False)
-    disease = relationship("Disease", backref="DiseaseList", lazy=True)
-
-
-class Disease(BaseModel):
-    name = Column(String(50), nullable=False)
-    # disease_list = relationship("DiseaseList", backref="Disease", lazy=True)
-    medical_report = relationship("MedicalReport", backref='Disease', lazy=True)
-    disease_list_id = Column(Integer, ForeignKey(DiseaseList.id), nullable=False)
-
-
-class Category(BaseModel):
-    __tablename__ = 'category'
-
-    name = Column(String(50), nullable=False)
-    products = relationship('Product', backref='category', lazy=True)
+class Benh(BaseModel):
+    tenBenh = Column(String(50), nullable=True)
+    chiTietLichSuBenh = relationship("ChiTietLichSuBenh", backref="Benh", lazy=True)
 
     def __str__(self):
-        return self.name
+        return self.tenBenh
 
 
-class Product(BaseModel):
-    name = Column(String(50), nullable=False)
-    unit = Column(String(50))
-    description = Column(Text)
-    price = Column(Float, default=0)
-    # image = Column(String(100))
-    active = Column(Boolean, default=True)
-    category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
-    medical_report_detail = relationship('MedicalReportDetail', backref='product', lazy=True)
+class LichSuBenh(BaseModel):
+    tenLichSuBenh = Column(String(50), nullable=True)
+    user_id = Column("User", ForeignKey(User.id), nullable=False)
+    chiTietLichSuBenh = relationship("ChiTietLichSuBenh", backref="LichSuBenh", lazy=True)
 
     def __str__(self):
-        return self.name
+        return self.tenLichSuBenh
 
 
-class MedicalReport(BaseModel):
-    created_date = Column(DateTime, default=datetime.now())
-    # details = relationship('Receipt', backref='receipt', lazy=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    disease_id = Column(Integer, ForeignKey(Disease.id), nullable=False)
-    medical_report_detail = relationship("MedicalReportDetail", backref='Disease', lazy=True)
-
-
-class MedicalReportDetail(BaseModel):
-    name = Column(String(50), nullable=False)
-    product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
-    medical_report_id = Column(Integer, ForeignKey(MedicalReport.id), nullable=False)
+class ChiTietLichSuBenh(BaseModel):
+    lichSuBenh_id = Column("LichSuBenh", ForeignKey(LichSuBenh.id), nullable=False)
+    benh_id = Column("Benh", ForeignKey(Benh.id), nullable=False)
 
 
 if __name__ == '__main__':
@@ -104,47 +140,85 @@ if __name__ == '__main__':
         db.drop_all()
         db.create_all()
 
-        import hashlib
+        # import hashlib
+        # password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
 
-        password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
+        u1 = User(tenUser="Trần Đăng Tuấn", tenDangNhap="admin", matKhau="123456", gioiTinh=True, diaChi="TPHCM",
+                  anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg",
+                  user_role=UserRole.ADMIN)
+        u2 = User(tenUser="Nguyễn Thị Phương Trang", tenDangNhap="cashier", matKhau="123", gioiTinh=False,
+                  diaChi="TPHCM",
+                  anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/PTrang1.jpg",
+                  user_role=UserRole.CASHIER)
+        u3 = User(tenUser="Nguyễn Thị Mai Trang", tenDangNhap="nurse", matKhau="123", gioiTinh=False, diaChi="TPHCM",
+                  anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/MaiTrang-ouitN(1).png",
+                  user_role=UserRole.NURSE)
+        u4 = User(tenUser="Hồ Quang Khải", tenDangNhap="doctor", matKhau="123", gioiTinh=True, diaChi="TPHCM",
+                  anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Khai_1.jpg",
+                  user_role=UserRole.DOCTOR)
+        u5 = User(tenUser="Lưu Quang Phương", tenDangNhap="user", matKhau="123", gioiTinh=True, diaChi="TPHCM",
+                  anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Phuong_2.jpg",
+                  user_role=UserRole.USER)
 
-        l1 = ListUser(name="Danh sách Admin")
-        l2 = ListUser(name="Danh sách nhân viên")
-        l3 = ListUser(name="Danh sách bệnh nhân")
+        dmt1 = DanhMucThuoc(tenDanhMuc="Thuốc nước")
+        dmt2 = DanhMucThuoc(tenDanhMuc="Thuốc viên")
+        dmt3 = DanhMucThuoc(tenDanhMuc="Thuốc bột")
 
-        u1 = User(name="Tuấn", birthday=datetime.now(), gender=True, username="admin", password=password,
-                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
-                  user_role=UserRole.ADMIN, list_user_id=1)
-        u2 = User(name="Thái", birthday=datetime.now(), gender=True, username="user1", password=password,
-                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
-                  user_role=UserRole.NURSE, list_user_id=2)
-        u3 = User(name="Trang", birthday=datetime.now(), gender=False, username="user2", password=password,
-                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
-                  user_role=UserRole.DOCTOR, list_user_id=2)
-        u4 = User(name="Hùng", birthday=datetime.now(), gender=True, username="user3", password=password,
-                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
-                  user_role=UserRole.CASHIER, list_user_id=2)
-        u5 = User(name="Thành", birthday=datetime.now(), gender=True, username="user4", password=password,
-                  avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
-                  user_role=UserRole.USER, list_user_id=3)
+        t1 = Thuoc(tenThuoc="Paracetammol", giaThuoc=50000, donViThuoc="Viên", moTa="Hi", danhMucThuoc_id=2)
+        t2 = Thuoc(tenThuoc="Vitamin C", giaThuoc=10000, donViThuoc="Viên", moTa="Hi", danhMucThuoc_id=2)
+        t3 = Thuoc(tenThuoc="Y", giaThuoc=5000, donViThuoc="Milli", moTa="Hi", danhMucThuoc_id=1)
+        t4 = Thuoc(tenThuoc="Sensacool", giaThuoc=20000, donViThuoc="Gói", moTa="Hi", danhMucThuoc_id=3)
+        t5 = Thuoc(tenThuoc="Adrenaline", giaThuoc=30000, donViThuoc="Gói", moTa="Hi", danhMucThuoc_id=3)
+        t6 = Thuoc(tenThuoc="Men Vi Sinh", giaThuoc=15000, donViThuoc="Gói", moTa="Hi", danhMucThuoc_id=3)
 
-        ld1 = DiseaseList(name="Tim")
-        ld2 = DiseaseList(name="Mạch")
+        pk1 = PhieuKham(tenPhieuKham="Phiếu 1", trieuChung="Đau bụng", chuanDoan="Loét dạ dày", user_id=5)
+        pk2 = PhieuKham(tenPhieuKham="Phiếu 2", trieuChung="Đau lưng", chuanDoan="Thoái hóa đốt sống", user_id=3)
+        pk3 = PhieuKham(tenPhieuKham="Phiếu 3", trieuChung="Đau tim", chuanDoan="Nhồi máu cơ tim", user_id=4)
 
-        d1 = Disease(name="Thiếu máu cơ tim", disease_list_id=1)
-        d2 = Disease(name="Bệnh viêm cơ tim", disease_list_id=1)
-        d3 = Disease(name="Bệnh mạch vành", disease_list_id=2)
-        d4 = Disease(name="Bệnh động mạch ngoại biên", disease_list_id=2)
+        ctpk1_pk1 = ChiTietPhieuKham(soLuongThuoc=3, Thuoc_id=3, phieuKham_id=1)
+        ctpk2_pk1 = ChiTietPhieuKham(soLuongThuoc=2, Thuoc_id=5, phieuKham_id=1)
+        ctpk3_pk1 = ChiTietPhieuKham(soLuongThuoc=10, Thuoc_id=6, phieuKham_id=1)
+        ctpk1_pk2 = ChiTietPhieuKham(soLuongThuoc=5, Thuoc_id=6, phieuKham_id=2)
+        ctpk2_pk2 = ChiTietPhieuKham(soLuongThuoc=4, Thuoc_id=4, phieuKham_id=2)
+        ctpk1_pk3 = ChiTietPhieuKham(soLuongThuoc=8, Thuoc_id=2, phieuKham_id=3)
+        ctpk2_pk3 = ChiTietPhieuKham(soLuongThuoc=15, Thuoc_id=6, phieuKham_id=3)
 
-        c1 = Category(name="Thuốc thể rắn")
-        c2 = Category(name="Thuốc thể mềm")
-        c3 = Category(name="Thuốc thể lỏng")
+        ds1 = DanhSachKham(tenDanhSachKham="Danh sách 1")
+        ds2 = DanhSachKham(tenDanhSachKham="Danh sách 2")
 
-        p1 = Product(name="Thuốc A", unit="viên", description="Uống", price=100000, active=1, category_id=1)
-        p2 = Product(name="Thuốc B", unit="viên", description="Ngậm", price=30000, active=1, category_id=1)
-        p3 = Product(name="Thuốc C", unit="gói", description="Uống", price=150000, active=1, category_id=3)
-        p4 = Product(name="Thuốc D", unit="bịch", description="Nhai", price=200000, active=1, category_id=2)
-        p5 = Product(name="Thuốc E", unit="bịch", description="Uống", price=500000, active=1, category_id=2)
+        ctdsk1_ds1 = ChiTietDanhSachKham(danhSachKham_id=1, user_id="3")
+        ctdsk2_ds1 = ChiTietDanhSachKham(danhSachKham_id=1, user_id="5")
 
-        db.session.add_all([c1, c2, c3, l1, l2, l3, u1, u2, u3, u4, u5, ld1, ld2, d1, d2, d3, d4, p1, p2, p3, p4, p5])
+        ctdsk1_ds2 = ChiTietDanhSachKham(danhSachKham_id=2, user_id="4")
+
+        b1 = Benh(tenBenh="Đau lưng")
+        b2 = Benh(tenBenh="Đau đầu")
+        b3 = Benh(tenBenh="Đau bụng")
+        b4 = Benh(tenBenh="Đau răng")
+        b5 = Benh(tenBenh="Đau tim")
+
+        lsb1 = LichSuBenh(tenLichSuBenh="Lịch sử bệnh 1", user_id=3)
+        lsb2 = LichSuBenh(tenLichSuBenh="Lịch sử bệnh 2", user_id=5)
+        lsb3 = LichSuBenh(tenLichSuBenh="Lịch sử bệnh 3", user_id=4)
+
+        ctlsb1_lsb1 = ChiTietLichSuBenh(lichSuBenh_id=1, benh_id=1)
+        ctlsb2_lsb1 = ChiTietLichSuBenh(lichSuBenh_id=1, benh_id=2)
+        ctlsb3_lsb1 = ChiTietLichSuBenh(lichSuBenh_id=2, benh_id=3)
+        ctlsb1_lsb2 = ChiTietLichSuBenh(lichSuBenh_id=2, benh_id=4)
+        ctlsb2_lsb2 = ChiTietLichSuBenh(lichSuBenh_id=2, benh_id=5)
+        ctlsb1_lsb3 = ChiTietLichSuBenh(lichSuBenh_id=3, benh_id=5)
+
+        hd1 = HoaDon(tenHoaDon="Hóa đơn 1", tongTien=1000000, user_id=3)
+        hd2 = HoaDon(tenHoaDon="Hóa đơn 2", tongTien=2000000, user_id=5)
+        hd3 = HoaDon(tenHoaDon="Hóa đơn 3", tongTien=4000000, user_id=4)
+
+        db.session.add_all([u1, u2, u3, u4, u5, dmt1, dmt2, dmt3, t1, t2, t3, t4, t5, t6, b1, b2, b3, b4, b5])
+        db.session.add_all([pk1, pk2, pk3])
+        db.session.add_all([ctpk1_pk1, ctpk2_pk1, ctpk3_pk1, ctpk1_pk2, ctpk2_pk2, ctpk1_pk3, ctpk2_pk3])
+        db.session.add_all([ds1, ds2])
+        db.session.add_all([ctdsk1_ds1, ctdsk2_ds1, ctdsk1_ds2])
+        db.session.add_all([lsb1, lsb2, lsb3])
+        db.session.add_all([ctlsb1_lsb1, ctlsb2_lsb1, ctlsb3_lsb1, ctlsb1_lsb2, ctlsb2_lsb2, ctlsb1_lsb3])
+        db.session.add_all([hd1, hd2, hd3])
+
         db.session.commit()
