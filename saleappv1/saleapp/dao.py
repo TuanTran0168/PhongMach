@@ -1,8 +1,7 @@
-from saleapp.models import Category, Product, User, Receipt, \
-    ListUser, MedicalReport, DiseaseList, Disease
+from saleapp.models import Category, Product, User, Receipt
+from saleapp import db
 from flask_login import current_user
 from sqlalchemy import func
-from saleapp import db
 import hashlib
 
 
@@ -10,11 +9,11 @@ def load_categories():
     return Category.query.all()
 
 
-def load_products(cate_id=None, kw=None):
-    query = Product.query
+def load_products(category_id=None, kw=None):
+    query = Product.query.filter(Product.active.__eq__(True))
 
-    if cate_id:
-        query = query.filter(Product.category_id.__eq__(cate_id))
+    if category_id:
+        query = query.filter(Product.category_id.__eq__(category_id))
 
     if kw:
         query = query.filter(Product.name.contains(kw))
@@ -44,7 +43,7 @@ def get_user_by_id(user_id):
     return User.query.get(user_id)
 
 
-def save_receipt(cart):
+def add_receipt(cart):
     if cart:
         r = Receipt(user=current_user)
         db.session.add(r)
@@ -58,15 +57,15 @@ def save_receipt(cart):
 
 
 def count_product_by_cate():
-    return db.session.query(Category.id, Category.name, func.count(Product.id))\
-             .join(Product, Product.category_id.__eq__(Category.id), isouter=True)\
-             .group_by(Category.id).all()
+    return db.session.query(Category.id, Category.name, func.count(Product.id)) \
+        .join(Product, Product.category_id.__eq__(Category.id), isouter=True) \
+        .group_by(Category.id).order_by(-Category.name).all()
 
 
-def stats_revenue(kw=None, from_date=None, to_date=None):
-    query = db.session.query(Product.id, Product.name, func.sum(ReceiptDetails.quantity*ReceiptDetails.price))\
-                      .join(ReceiptDetails, ReceiptDetails.product_id.__eq__(Product.id))\
-                      .join(Receipt, ReceiptDetails.receipt_id.__eq__(Receipt.id))
+def stats_revenue_by_prod(kw=None, from_date=None, to_date=None):
+    query = db.session.query(Product.id, Product.name, func.sum(ReceiptDetails.quantity * ReceiptDetails.price)) \
+        .join(ReceiptDetails, ReceiptDetails.product_id.__eq__(Product.id)) \
+        .join(Receipt, ReceiptDetails.receipt_id.__eq__(Receipt.id))
 
     if kw:
         query = query.filter(Product.name.contains(kw))
@@ -77,10 +76,23 @@ def stats_revenue(kw=None, from_date=None, to_date=None):
     if to_date:
         query = query.filter(Receipt.created_date.__le__(to_date))
 
-    return query.group_by(Product.id).order_by(-Product.id).all()
+    return query.group_by(Product.id).all()
+
+
+def load_comments(product_id):
+    return Comment.query.filter(Comment.product_id.__eq__(product_id)).order_by(-Comment.id).all()
+
+
+def save_comment(product_id, content):
+    c = Comment(content=content, product_id=product_id, user=current_user)
+    db.session.add(c)
+    db.session.commit()
+
+    return c
 
 
 if __name__ == '__main__':
     from saleapp import app
+
     with app.app_context():
         print(count_product_by_cate())

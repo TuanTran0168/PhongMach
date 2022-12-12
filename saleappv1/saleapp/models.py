@@ -26,15 +26,15 @@ class ListUser(BaseModel):
 
 
 class User(BaseModel, UserMixin):
-    name = Column(String(50), nullable=False)
-    birthday = Column(Date, nullable=False)
-    gender = Column(Boolean, default=True, nullable=False)
+    name = Column(String(50), nullable=True)
+    birthday = Column(Date, nullable=True)
+    gender = Column(Boolean, default=True, nullable=True)
     username = Column(String(50), nullable=False)
     password = Column(String(50), nullable=False)
     avatar = Column(String(200), nullable=False)
     active = Column(Boolean, default=True)
     user_role = Column(Enum(UserRole), default=UserRole.USER)
-    list_user_id = Column(Integer, ForeignKey(ListUser.id), nullable=False)
+    list_user_id = Column(Integer, ForeignKey(ListUser.id), nullable=True)
     medical_report = relationship("MedicalReport", backref='user', lazy=True)
     receipt = relationship('Receipt', backref='user', lazy=True)
 
@@ -101,6 +101,7 @@ class MedicalReportDetail(BaseModel):
 
 if __name__ == '__main__':
     with app.app_context():
+        db.drop_all()
         db.create_all()
 
         import hashlib
@@ -114,16 +115,16 @@ if __name__ == '__main__':
         u1 = User(name="Tuấn", birthday=datetime.now(), gender=True, username="admin", password=password,
                   avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
                   user_role=UserRole.ADMIN, list_user_id=1)
-        u2 = User(name="Thái", birthday=datetime.now(), gender=True, username="admin", password=password,
+        u2 = User(name="Thái", birthday=datetime.now(), gender=True, username="user1", password=password,
                   avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
                   user_role=UserRole.NURSE, list_user_id=2)
-        u3 = User(name="Trang", birthday=datetime.now(), gender=False, username="admin", password=password,
+        u3 = User(name="Trang", birthday=datetime.now(), gender=False, username="user2", password=password,
                   avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
                   user_role=UserRole.DOCTOR, list_user_id=2)
-        u4 = User(name="Hùng", birthday=datetime.now(), gender=True, username="admin", password=password,
+        u4 = User(name="Hùng", birthday=datetime.now(), gender=True, username="user3", password=password,
                   avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
                   user_role=UserRole.CASHIER, list_user_id=2)
-        u5 = User(name="Thành", birthday=datetime.now(), gender=True, username="admin", password=password,
+        u5 = User(name="Thành", birthday=datetime.now(), gender=True, username="user4", password=password,
                   avatar="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg", active=True,
                   user_role=UserRole.USER, list_user_id=3)
 

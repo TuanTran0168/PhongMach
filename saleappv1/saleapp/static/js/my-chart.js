@@ -1,4 +1,4 @@
-function drawCateChart(labels, data) {
+function drawCateStats(labels, data) {
  const ctx = document.getElementById('cateStats');
 
   new Chart(ctx, {
@@ -21,7 +21,7 @@ function drawCateChart(labels, data) {
   });
 }
 
-function drawRevenueChart(labels, data) {
+function drawRevenueStats(labels, data) {
 const ctx = document.getElementById('revenueStats');
 
   new Chart(ctx, {
@@ -32,7 +32,7 @@ const ctx = document.getElementById('revenueStats');
         label: 'Doanh thu',
         data: data,
         borderWidth: 1,
-        backgroundColor: ['red', 'green', 'blue', 'rgba(198, 111, 90, 0.8)', 'rgba(255, 199, 120, 0.8)']
+        backgroundColor: ['red', 'green', 'blue', 'gold', 'rgba(135, 156, 150, 0.7)']
       }]
     },
     options: {

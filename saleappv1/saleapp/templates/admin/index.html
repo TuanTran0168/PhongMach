@@ -4,27 +4,31 @@
 
 {% if current_user.is_authenticated %}
 
-<h1 class="text-center text-info">TRANG CHỦ QUẢN TRỊ PHÒNG MẠCH TƯ</h1>
-<h3>Chào <span class="text-danger">{{ current_user.name }}</span>!!! </h3>
+<head>
+    <link href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" rel="stylesheet"/>
 
-<div class="row">
-    <div class="col-md-5 col-sm-12">
-        <table class="table">
-            <tr>
-                <th>Id</th>
-                <th>Tên danh mục</th>
-                <th>Số sản phẩm</th>
-            </tr>
-            {% for s in stats %}
-            <tr>
-                <td>{{ s[0] }}</td>
-                <td>{{ s[1] }}</td>
-                <td>{{ s[2] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+</head>
+
+<h1 style="margin: 2% 1%; font-weight: bold; color: black" class="text-center">TRANG CHỦ QUẢN TRỊ PHÒNG MẠCH TƯ</h1>
+
+
+<div class="admin row">
+    <div class="admin-left col-md-4 col-sm-12text-center">
+        <div class = "admin-left-img">
+            <img src="{{ current_user.avatar }}">
+        </div>
+
+        <div class="admin-left-infor">
+            <h4>{{ current_user.name }}</h4>
+            <h4>{{ current_user.user_role }}</h4>
+            <h4>{{ current_user.birthday }}</h4>
+            <h4>ONLINE <i class="fas fa-toggle-on"></i> </h4>
+
+        </div>
     </div>
-    <div class="col-md-7 col-sm-12">
+
+    <div class="admin-right col-md-8 col-sm-12">
         <canvas id="cateStats"></canvas>
     </div>
 </div>
@@ -32,21 +36,22 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/my-chart.js') }}"></script>
 <script>
-    let labels = []
-    let data = []
-    {% for s in stats %}
-    labels.push('{{ s[1] }}')
+  let data = [], labels=[];
+  {% for s in stats %}
     data.push({{ s[2] }})
-    {% endfor %}
-    window.onload = function() {
-        drawCateChart(labels, data)
-    }
+    labels.push('{{ s[1] }}')
+  {% endfor %}
+  window.onload = function() {
+    drawCateStats(labels, data)
+  }
 </script>
+
 {% else %}
+<h1 class="text-center text-danger">ĐĂNG NHẬP QUẢN TRỊ</h1>
 <form method="post" action="/login-admin">
     <div class="mb-3 mt-3">
-        <label for="username" class="form-label">Tên đăng nhập:</label>
-        <input type="text" class="form-control" id="username" placeholder="Nhập tên đăng nhập" name="username">
+        <label for="email" class="form-label">Tên đăng nhập:</label>
+        <input type="text" class="form-control" id="email" placeholder="Nhập tên đăng nhập" name="username">
     </div>
     <div class="mb-3">
         <label for="pwd" class="form-label">Mật khẩu:</label>
@@ -54,8 +59,6 @@
     </div>
     <button type="submit" class="btn btn-primary">Đăng nhập</button>
 </form>
-
-
 {% endif %}
 
 

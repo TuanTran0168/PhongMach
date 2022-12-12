@@ -7,6 +7,6 @@ def cart_stats(cart):
             total_amount += c['quantity']*c['price']
 
     return {
-        "total_amount": total_amount,
-        "total_quantity": total_quantity
+        'total_amount': total_amount,
+        'total_quantity': total_quantity
     }
