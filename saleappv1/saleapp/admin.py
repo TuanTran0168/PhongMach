@@ -54,16 +54,17 @@ class ProductView(AuthenticatedModelView):
 class StatsView(AuthenticatedView):
     @expose('/')
     def index(self):
-        stats = dao.stats_by_medic(kw=request.args.get('kw'),
-                                          from_date=request.args.get('from_date'),
-                                          to_date=request.args.get('to_date'))
-        return self.render('admin/stats.html', stats=stats)
+        statsMedicine = dao.stats_by_medic(kw=request.args.get('kw'),
+                                   from_date=request.args.get('from_date'),
+                                   to_date=request.args.get('to_date'))
+        return self.render('admin/stats.html', statsMedicine=statsMedicine)
+
 
 class StatsView1(AuthenticatedView):
     @expose('/')
     def index(self):
-        stats = dao.stats_by_revenue(month=request.args.get('month'))
-        return self.render('admin/stats1.html', stats=stats)
+        statsRevenue = dao.stats_by_revenue(month=request.args.get('month'))
+        return self.render('admin/stats1.html', statsRevenue=statsRevenue)
 
 
 class LogoutView(AuthenticatedView):
@@ -76,15 +77,15 @@ class LogoutView(AuthenticatedView):
 class MyAdminView(AdminIndexView):
     @expose('/')
     def index(self):
-        stats = dao.count_product_by_cate()
-        return self.render('admin/index.html', stats=stats)
+        statsProduct = dao.count_product_by_cate()
+        userRoleStats = dao.count_user()
+        return self.render('admin/index.html', userRoleStats=userRoleStats, statsProduct=statsProduct)
 
 
 admin = Admin(app=app, name='QUẢN TRỊ', template_mode='bootstrap4', index_view=MyAdminView())
 admin.add_view(AuthenticatedModelView(DanhMucThuoc, db.session, name='Danh mục thuốc'))
-# admin.add_view(AuthenticatedModelView(Tag, db.session, name='Tag'))
 admin.add_view(AuthenticatedModelView(Thuoc, db.session, name='Danh sách thuốc'))
+admin.add_view(AuthenticatedModelView(User, db.session, name='Tài khoản'))
 admin.add_view(StatsView(name='Thống kê - Báo cáo sử dụng thuốc'))
 admin.add_view(StatsView1(name='Thống kê - báo cáo doanh thu'))
 admin.add_view(LogoutView(name='Đăng xuất'))
-

@@ -10,9 +10,9 @@ div.admin-left {
 
 div.admin-left-img {
 
-    margin: 10%;
-    width: 80%;
-    height: 350px;
+    margin: 5% 17.5%;
+    width: 65%;
+    height: 300px;
 
 }
 
@@ -23,7 +23,7 @@ div.admin-left-img > img {
 }
 
 div.admin-left-infor {
-    margin: 10%;
+    margin: 5%;
     padding: 5%;
     background-color: #e6e6e6;
     border-radius: 5%;

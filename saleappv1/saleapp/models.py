@@ -4,13 +4,13 @@ from typing import re
 from colorama import Fore
 from flask_admin.tests.fileadmin.test_fileadmin import Base
 from flask_babelex import Babel
-from sqlalchemy import Column, Integer, String, Float, Boolean, Text, ForeignKey, Enum, DateTime, null
+from sqlalchemy import Column, Integer, String, Float, Boolean, Text, ForeignKey, Enum, DateTime, null, Date
 # from sqlalchemy.ext.mypy.names import COLUMN
 from sqlalchemy.orm import relationship, backref
 from saleapp import db, app
 from enum import Enum as UserEnum
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, date
 
 from sqlalchemy.util import nullcontext
 
@@ -56,6 +56,7 @@ class User(BaseModel, UserMixin):
     matKhau = Column(String(50), nullable=False)
     ngaySinh = Column(DateTime, default=datetime.now())
     gioiTinh = Column(Boolean, nullable=True)
+    soDienThoai = Column(String(50), nullable=True)
     diaChi = Column(String(100), nullable=True)
     anhDaiDien = Column(String(100), nullable=False)
     trangThai = Column(Boolean, default=True)
@@ -72,7 +73,8 @@ class User(BaseModel, UserMixin):
 
 class HoaDon(BaseModel):
     tenHoaDon = Column(String(50), nullable=False)
-    ngayKham = Column(DateTime, default=datetime.now())
+    # ngayKham = Column(DateTime, default=datetime.now())
+    ngayKham = Column(Date, default= datetime.now())
     tongTien = Column(Float, nullable=True)
     user_id = Column("User", ForeignKey(User.id), nullable=False)
 
@@ -143,20 +145,25 @@ if __name__ == '__main__':
         # import hashlib
         # password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
 
-        u1 = User(tenUser="Trần Đăng Tuấn", tenDangNhap="admin", matKhau="123456", gioiTinh=True, diaChi="TPHCM",
+        u1 = User(tenUser="Trần Đăng Tuấn", tenDangNhap="admin", matKhau="123456", gioiTinh=True, soDienThoai = "0123", diaChi="TPHCM",
                   anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Vinh_2.jpg",
                   user_role=UserRole.ADMIN)
-        u2 = User(tenUser="Nguyễn Thị Phương Trang", tenDangNhap="cashier", matKhau="123", gioiTinh=False,
+        u2 = User(tenUser="Nguyễn Thị Phương Trang", tenDangNhap="cashier", matKhau="123", gioiTinh=False, soDienThoai = "0124",
                   diaChi="TPHCM",
                   anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/PTrang1.jpg",
                   user_role=UserRole.CASHIER)
-        u3 = User(tenUser="Nguyễn Thị Mai Trang", tenDangNhap="nurse", matKhau="123", gioiTinh=False, diaChi="TPHCM",
+        u3 = User(tenUser="Nguyễn Thị Mai Trang", tenDangNhap="nurse", matKhau="123", gioiTinh=False, soDienThoai = "0125", diaChi="TPHCM",
                   anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/MaiTrang-ouitN(1).png",
                   user_role=UserRole.NURSE)
-        u4 = User(tenUser="Hồ Quang Khải", tenDangNhap="doctor", matKhau="123", gioiTinh=True, diaChi="TPHCM",
+        u4 = User(tenUser="Hồ Quang Khải", tenDangNhap="doctor", matKhau="123", gioiTinh=True, soDienThoai = "0126", diaChi="TPHCM",
                   anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Khai_1.jpg",
                   user_role=UserRole.DOCTOR)
-        u5 = User(tenUser="Lưu Quang Phương", tenDangNhap="user", matKhau="123", gioiTinh=True, diaChi="TPHCM",
+        u5 = User(tenUser="Lưu Quang Phương", tenDangNhap="user", matKhau="123", gioiTinh=True, soDienThoai = "0127", diaChi="TPHCM",
+                  anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Phuong_2.jpg",
+                  user_role=UserRole.USER)
+
+        u6 = User(tenUser="Đàng Sỹ Tuân", tenDangNhap="user1", matKhau="123", gioiTinh=True, soDienThoai="0128",
+                  diaChi="Phú Nhuận",
                   anhDaiDien="http://it.ou.edu.vn/asset/ckfinder/userfiles/5/images/giang_vien/Phuong_2.jpg",
                   user_role=UserRole.USER)
 
@@ -211,14 +218,22 @@ if __name__ == '__main__':
         hd1 = HoaDon(tenHoaDon="Hóa đơn 1", tongTien=1000000, user_id=3)
         hd2 = HoaDon(tenHoaDon="Hóa đơn 2", tongTien=2000000, user_id=5)
         hd3 = HoaDon(tenHoaDon="Hóa đơn 3", tongTien=4000000, user_id=4)
+        hd4 = HoaDon(tenHoaDon="Hóa đơn 4", tongTien=2600000, user_id=2)
+        hd5 = HoaDon(tenHoaDon="Hóa đơn 5", tongTien=1700000, user_id=5)
+        hd6 = HoaDon(tenHoaDon="Hóa đơn 6", tongTien=2000000, user_id=1)
+        hd7 = HoaDon(tenHoaDon="Hóa đơn 7", tongTien=1400000, user_id=3)
+        hd8 = HoaDon(tenHoaDon="Hóa đơn 8", tongTien=2400000, user_id=1)
 
-        db.session.add_all([u1, u2, u3, u4, u5, dmt1, dmt2, dmt3, t1, t2, t3, t4, t5, t6, b1, b2, b3, b4, b5])
+        db.session.add_all([u1, u2, u3, u4, u5, u6])
+        db.session.add_all([dmt1, dmt2, dmt3])
+        db.session.add_all([t1, t2, t3, t4, t5, t6])
+        db.session.add_all([b1, b2, b3, b4, b5])
         db.session.add_all([pk1, pk2, pk3])
         db.session.add_all([ctpk1_pk1, ctpk2_pk1, ctpk3_pk1, ctpk1_pk2, ctpk2_pk2, ctpk1_pk3, ctpk2_pk3])
         db.session.add_all([ds1, ds2])
         db.session.add_all([ctdsk1_ds1, ctdsk2_ds1, ctdsk1_ds2])
         db.session.add_all([lsb1, lsb2, lsb3])
         db.session.add_all([ctlsb1_lsb1, ctlsb2_lsb1, ctlsb3_lsb1, ctlsb1_lsb2, ctlsb2_lsb2, ctlsb1_lsb3])
-        db.session.add_all([hd1, hd2, hd3])
+        db.session.add_all([hd1, hd2, hd3, hd4, hd5, hd6, hd7, hd8])
 
         db.session.commit()

@@ -62,6 +62,26 @@ def count_product_by_cate():
         .group_by(DanhMucThuoc.id).order_by(-DanhMucThuoc.tenDanhMuc).all()
 
 
+def count_user_by_role(userRoleStats):
+    if userRoleStats:
+        count = 0
+        for r1 in userRoleStats.values():
+            for r2 in userRoleStats.values():
+                if r1.__eq__(r2):
+                    count = count + 1
+    return count
+
+    # return db.session.query(User.tenUser, func.count(User.user_role == UserRole.USER),
+    #                         func.count(User.user_role == UserRole.CASHIER), \
+    #                         func.count(User.user_role == UserRole.NURSE), \
+    #                         func.count(User.user_role == UserRole.DOCTOR), \
+    #                         func.count(User.user_role == UserRole.ADMIN)).group_by(User.tenUser).all()
+
+
+def count_user():
+    return db.session.query(User.user_role, func.count(User.id)).group_by(User.user_role).all()
+
+
 def stats_revenue_by_user(kw=None, from_date=None, to_date=None):
     query = db.session.query(User.tenUser, PhieuKham.ngayKham, func.sum(ChiTietPhieuKham.soLuongThuoc * Thuoc.giaThuoc)) \
         .join(PhieuKham, PhieuKham.id.__eq__(ChiTietPhieuKham.phieuKham_id)) \
@@ -95,11 +115,29 @@ def stats_revenue_by_user(kw=None, from_date=None, to_date=None):
 #
 #     return query.group_by(Thuoc.id, ChiTietPhieuKham.soLuongThuoc ).order_by(Thuoc.id).all()
 
+# Bản gốc của thống kê báo cáo thuốc
+# def stats_by_medic(kw=None, from_date=None, to_date=None):
+#     query = db.session.query(Thuoc.id, Thuoc.tenThuoc, Thuoc.donViThuoc, ChiTietPhieuKham.soLuongThuoc,
+#                              ChiTietPhieuKham.phieuKham_id, \
+#                              func.sum(ChiTietPhieuKham.soLuongThuoc * Thuoc.giaThuoc)) \
+#         .join(Thuoc, Thuoc.id.__eq__(ChiTietPhieuKham.Thuoc_id), isouter=True)
+#
+#     if kw:
+#         query = query.filter(Thuoc.tenThuoc.contains(kw))
+#
+#     if from_date:
+#         query = query.filter(PhieuKham.ngayKham.__ge__(from_date))
+#
+#     if to_date:
+#         query = query.filter(PhieuKham.ngayKham.__le__(to_date))
+#
+#     return query.group_by(Thuoc.id, ChiTietPhieuKham.phieuKham_id, ChiTietPhieuKham.soLuongThuoc).order_by(
+#         ChiTietPhieuKham.phieuKham_id, Thuoc.id).all()
 
+# Hàng thử nghiệm của thống kê báo cáo thuốc (Thành công, thành hàng real)
 def stats_by_medic(kw=None, from_date=None, to_date=None):
-    query = db.session.query(Thuoc.id, Thuoc.tenThuoc, Thuoc.donViThuoc, ChiTietPhieuKham.soLuongThuoc,
-                             ChiTietPhieuKham.phieuKham_id, \
-                             func.sum(ChiTietPhieuKham.soLuongThuoc * Thuoc.giaThuoc)) \
+    query = db.session.query(Thuoc.id, Thuoc.tenThuoc, Thuoc.donViThuoc,
+                             func.sum(ChiTietPhieuKham.soLuongThuoc)) \
         .join(Thuoc, Thuoc.id.__eq__(ChiTietPhieuKham.Thuoc_id), isouter=True)
 
     if kw:
@@ -111,20 +149,20 @@ def stats_by_medic(kw=None, from_date=None, to_date=None):
     if to_date:
         query = query.filter(PhieuKham.ngayKham.__le__(to_date))
 
-    return query.group_by(Thuoc.id, ChiTietPhieuKham.phieuKham_id, ChiTietPhieuKham.soLuongThuoc).order_by(
-        ChiTietPhieuKham.phieuKham_id, Thuoc.id).all()
+    return query.group_by(Thuoc.id).order_by(-Thuoc.id).all()
 
+
+# Ngày, số bệnh nhân, doanh thu
+# Tên bệnh nhân, số tiền
 def stats_by_revenue(month=None):
-    query = db.session.query(User.id, \
-                             func.sum(100000 + Thuoc.giaThuoc * ChiTietPhieuKham.soLuongThuoc)) \
-        .join(User, User.id.__eq__(PhieuKham.user_id))\
-        .join(PhieuKham, PhieuKham.id.__eq__(ChiTietPhieuKham.phieuKham_id)) \
-        .join(Thuoc, Thuoc.id.__eq__(ChiTietPhieuKham.Thuoc_id))
-
+    # HoaDon, User
+    query = db.session.query(HoaDon.ngayKham, func.count(User.id), func.sum(HoaDon.tongTien)).join(HoaDon,
+                                                                                                   HoaDon.user_id.__eq__(
+                                                                                                       User.id))
     if month:
-        query = query.filter(PhieuKham.ngayKham.contains(month))
+        query = query.filter(HoaDon.ngayKham.contains(month))
 
-    return query.group_by(User.id).all()
+    return query.group_by(HoaDon.ngayKham).all()
 
 
 def load_comments(product_id):
@@ -143,5 +181,12 @@ if __name__ == '__main__':
     from saleapp import app
 
     with app.app_context():
-
+        print(stats_by_medic())
+        print(count_user())
         print(stats_by_revenue())
+        a = stats_by_medic()
+
+        print(type(int(a[0][3])))
+        # print(count_user_by_role(UserRole.USER))
+        # print(count_user_by_role(UserRole.ADMIN))
+        # print(count_user_by_role(UserRole.DOCTOR))
