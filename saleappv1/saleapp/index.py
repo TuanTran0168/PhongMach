@@ -1,4 +1,4 @@
-from flask import session
+from flask import session, render_template
 from saleapp import app, dao, admin, login, utils, controllers
 
 
@@ -16,6 +16,9 @@ app.add_url_rule('/api/pay', 'pay', controllers.pay)
 app.add_url_rule('/api/products/<int:product_id>/comments', 'comments', controllers.comments)
 app.add_url_rule('/api/products/<int:product_id>/comments', 'add-comment', controllers.add_comment, methods=['post'])
 
+@app.route("/doctor")
+def doctor():
+    return render_template("doctor.html")
 
 @login.user_loader
 def load_user(user_id):
