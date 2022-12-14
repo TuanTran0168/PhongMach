@@ -5,6 +5,10 @@ from sqlalchemy import func
 import hashlib
 
 
+def load_diseases():
+    return Benh.query.all()
+
+
 def load_categories():
     return DanhMucThuoc.query.all()
 

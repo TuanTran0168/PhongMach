@@ -111,8 +111,8 @@ class ChiTietDanhSachKham(BaseModel):
     danhSachKham_id = Column("DanhSachKham", ForeignKey(DanhSachKham.id), nullable=False)
     user_id = Column("User", ForeignKey(User.id), nullable=False)
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
 
 class Benh(BaseModel):

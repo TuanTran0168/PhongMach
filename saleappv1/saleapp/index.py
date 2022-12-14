@@ -33,6 +33,13 @@ def common_attribute():
         'cart': utils.cart_stats(session.get(app.config['CART_KEY']))
     }
 
+@app.context_processor
+def get_disease():
+    diseases = dao.load_diseases()
+    return {
+        'diseases': diseases
+    }
+
 
 if __name__ == '__main__':
     app.run(debug=True)
